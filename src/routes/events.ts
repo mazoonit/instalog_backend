@@ -7,34 +7,90 @@ import { prisma } from '../utilities/prisma';
 import { create } from 'domain';
 const router = express.Router();
 
+const PAGE_SIZE = 10;
+
 router.get('/', async (req: Request, res: Response, next: Function) => {
-  return res.status(200).send({
-    message: 'Hello World!',
-  });
+  try {
+    let {
+      pageNumber,
+      searchValue,
+      group_id,
+      group_name,
+      actor_id,
+      actor_name,
+      target_id,
+      target_name,
+      action_id,
+      action_name,
+    } = req.body;
+    const events = await prisma.event.findMany({
+      where: {
+        AND: [
+          {
+            OR: [
+              {
+                actor: {
+                  name: { contains: searchValue },
+                },
+              },
+              {
+                actor: {
+                  email: { contains: searchValue },
+                },
+              },
+              {
+                target: {
+                  name: { contains: searchValue },
+                },
+              },
+              {
+                action: {
+                  name: { contains: searchValue },
+                },
+              },
+              {
+                group: {
+                  name: { contains: searchValue },
+                },
+              },
+            ],
+          },
+          {
+            actor_id: actor_id,
+            target_id: target_id,
+            action_id: action_id,
+            group_id: group_id,
+            actor: {
+              name: { contains: actor_name },
+            },
+            target: {
+              name: { contains: target_name },
+            },
+            action: {
+              name: { contains: action_name },
+            },
+            group: {
+              name: { contains: group_name },
+            },
+          },
+        ],
+      },
+      include: {
+        actor: true,
+        action: true,
+        group: true,
+        target: true,
+      },
+      skip: PAGE_SIZE * ((!pageNumber || pageNumber < 1 ? 1 : pageNumber) - 1),
+      take: PAGE_SIZE,
+    });
+
+    return res.status(200).send(events);
+  } catch (error) {
+    next(error);
+  }
 });
-/*
-{
-  "id": "evt_15B56WILKW5K",
-  "object": "event",
-  "actor_id": "user_3VG74289PUA2",
-  "actor_name": "Ali Salah",
-  "group": "instatus.com",
-  "action": {
-    "id": "evt_action_PGTD81NCAOQ2",
-    "object": "event_action",
-    "name": "user.login_succeeded"
-  },
-  "target_id": "user_DOKVD1U3L030",
-  "target_name": "ali@instatus.com",
-  "location": "105.40.62.95",
-  "occurred_at": "2022-01-05T14:31:13.607Z",
-  "metadata": {
-    "redirect": "/setup",
-    "description": "User login succeeded.",
-    "x_request_id": "req_W1Y13QOHMI5H"
-  },
-}
-*/
+
 router.post('/', async (req: Request, res: Response, next: Function) => {
   //serializer
   try {
