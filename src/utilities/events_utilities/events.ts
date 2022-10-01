@@ -4,6 +4,8 @@ const prismaModels = {
   actor: prisma.actor,
   target: prisma.target,
   group: prisma.group,
+  action: prisma.action,
+  event: prisma.event,
 };
 export const getObjectIdByAnotherField = async (props: {
   searchField: string;
@@ -14,11 +16,11 @@ export const getObjectIdByAnotherField = async (props: {
   try {
     //getting data
     let { value, searchField, tableName, data } = props;
-
     //casting to get the model from the array based on the string variable.
     type ObjectKey = keyof typeof prismaModels;
     const tableNameCasted = tableName as ObjectKey;
     let prismaModel: any = prismaModels[tableNameCasted];
+    console.log(tableNameCasted);
 
     //casting to create custom where object to search of different fields
 
@@ -43,4 +45,23 @@ export const getObjectIdByAnotherField = async (props: {
   } catch (error) {
     throw new GenericError(500, 'Internal Server Error!');
   }
+};
+
+export const checkUniqueId = async (props: { id: string; tableName: string }) => {
+  //getting data
+  let { id, tableName } = props;
+  //casting to get the model from the array based on the string variable.
+  type ObjectKey = keyof typeof prismaModels;
+  const tableNameCasted = tableName as ObjectKey;
+  let prismaModel: any = prismaModels[tableNameCasted];
+  // checking for object if already exists
+
+  let obj = await prismaModel.findUnique({
+    where: { id: id },
+  });
+
+  if (obj) {
+    throw new GenericError(400, tableName + ' id already exists!');
+  }
+  return;
 };

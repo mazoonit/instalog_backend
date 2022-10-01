@@ -18,7 +18,7 @@ model Group {
 }
 
 model Actor {
-  id         Int      @id @default(autoincrement())
+  id         String   @id
   name       String
   email      String   @unique
   created_at DateTime @default(now())
@@ -27,7 +27,7 @@ model Actor {
 }
 
 model Action {
-  id         Int      @id @default(autoincrement())
+  id         String   @id
   name       String
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -35,7 +35,7 @@ model Action {
 }
 
 model Target {
-  id         Int      @id @default(autoincrement())
+  id         String   @id
   name       String   @unique
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
@@ -43,16 +43,16 @@ model Target {
 }
 
 model Event {
-  id          Int      @id @default(autoincrement())
+  id          String   @id
   location    String
   actor       Actor    @relation(fields: [actor_id], references: [id])
-  actor_id    Int
+  actor_id    String
   group       Group    @relation(fields: [group_id], references: [id])
   group_id    Int
   action      Action   @relation(fields: [action_id], references: [id])
-  action_id   Int
+  action_id   String
   target      Target   @relation(fields: [target_id], references: [id])
-  target_id   Int
+  target_id   String
   meta_data   String
   occurred_at DateTime
   created_at  DateTime @default(now())
