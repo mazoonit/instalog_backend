@@ -2,6 +2,8 @@ import express, { Request, Response } from 'express';
 import serializer from '../utilities/serializer';
 import { validatorMiddleware } from '../utilities/validator';
 import GenericError from '../utilities/GenericError';
+import { getObjectIdByName } from '../utilities/events_utilities/events';
+import { prisma } from '../utilities/prisma';
 const router = express.Router();
 
 router.get('/', async (req: Request, res: Response, next: Function) => {
@@ -40,8 +42,6 @@ router.post('/', async (req: Request, res: Response, next: Function) => {
   );
   //get actor_id, target_id, group_id
 
-  return res.status(200).send({
-    message: 'Hello World from post!',
-  });
+  return res.status(200).send(event);
 });
 export default router;
