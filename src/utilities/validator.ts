@@ -26,6 +26,11 @@ const validatePrimitiveType = (value: any, key: string, type: string) => {
         throw new GenericError(400, `${key} field must be a number!`);
       }
       break;
+    case 'int':
+      if (!Number.isInteger(value)) {
+        throw new GenericError(400, `${key} field must be an Integer!`);
+      }
+      break;
     case 'string':
       if (typeof value !== 'string') {
         throw new GenericError(400, `${key} field must be a string!`);

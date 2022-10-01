@@ -9,87 +9,110 @@ const router = express.Router();
 
 const PAGE_SIZE = 10;
 
-router.get('/', async (req: Request, res: Response, next: Function) => {
-  try {
-    let {
-      pageNumber,
-      searchValue,
-      group_id,
-      group_name,
-      actor_id,
-      actor_name,
-      target_id,
-      target_name,
-      action_id,
-      action_name,
-    } = req.body;
-    const events = await prisma.event.findMany({
-      where: {
-        AND: [
-          {
-            OR: [
-              {
-                actor: {
-                  name: { contains: searchValue },
+router.get(
+  '/',
+  [
+    validatorMiddleware([
+      { type: 'string', key: 'actor_email' },
+      { type: 'string', key: 'actor_name' },
+      { type: 'string', key: 'target_name' },
+      { type: 'string', key: 'group_name' },
+      { type: 'string', key: 'action_name' },
+      { type: 'int', key: 'actor_id' },
+      { type: 'int', key: 'target_id' },
+      { type: 'int', key: 'group_id' },
+      { type: 'int', key: 'action_id' },
+      { type: 'string', key: 'searchValue' },
+      { type: 'int', key: 'pageNumber' },
+    ]),
+  ],
+  async (req: Request, res: Response, next: Function) => {
+    try {
+      let {
+        pageNumber,
+        searchValue,
+        group_id,
+        group_name,
+        actor_id,
+        actor_name,
+        actor_email,
+        target_id,
+        target_name,
+        action_id,
+        action_name,
+      } = req.body;
+      if (!pageNumber) {
+        pageNumber = 1;
+      }
+      const events = await prisma.event.findMany({
+        where: {
+          AND: [
+            {
+              OR: [
+                {
+                  actor: {
+                    name: { contains: searchValue },
+                  },
                 },
-              },
-              {
-                actor: {
-                  email: { contains: searchValue },
+                {
+                  actor: {
+                    email: { contains: searchValue },
+                  },
                 },
-              },
-              {
-                target: {
-                  name: { contains: searchValue },
+                {
+                  target: {
+                    name: { contains: searchValue },
+                  },
                 },
-              },
-              {
-                action: {
-                  name: { contains: searchValue },
+                {
+                  action: {
+                    name: { contains: searchValue },
+                  },
                 },
-              },
-              {
-                group: {
-                  name: { contains: searchValue },
+                {
+                  group: {
+                    name: { contains: searchValue },
+                  },
                 },
-              },
-            ],
-          },
-          {
-            actor_id: actor_id,
-            target_id: target_id,
-            action_id: action_id,
-            group_id: group_id,
-            actor: {
-              name: { contains: actor_name },
+              ],
             },
-            target: {
-              name: { contains: target_name },
+            {
+              actor_id: actor_id,
+              target_id: target_id,
+              action_id: action_id,
+              group_id: group_id,
+              actor: {
+                name: { contains: actor_name },
+                email: { contains: actor_email },
+              },
+              target: {
+                name: { contains: target_name },
+              },
+              action: {
+                name: { contains: action_name },
+              },
+              group: {
+                name: { contains: group_name },
+              },
             },
-            action: {
-              name: { contains: action_name },
-            },
-            group: {
-              name: { contains: group_name },
-            },
-          },
-        ],
-      },
-      include: {
-        actor: true,
-        action: true,
-        group: true,
-        target: true,
-      },
-      skip: PAGE_SIZE * ((!pageNumber || pageNumber < 1 ? 1 : pageNumber) - 1),
-      take: PAGE_SIZE,
-    });
+          ],
+        },
+        include: {
+          actor: true,
+          action: true,
+          group: true,
+          target: true,
+        },
+        skip: PAGE_SIZE * ((!pageNumber || pageNumber < 1 ? 1 : pageNumber) - 1),
+        take: PAGE_SIZE,
+      });
 
-    return res.status(200).send(events);
-  } catch (error) {
-    next(error);
-  }
-});
+      return res.status(200).send(events);
+    } catch (error) {
+      next(error);
+    }
+  },
+);
 
 router.post(
   '/',
