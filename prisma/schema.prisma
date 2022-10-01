@@ -1,6 +1,5 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,4 +7,54 @@ generator client {
 datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
+}
+
+model Group {
+  id         Int      @id @default(autoincrement())
+  name       String   @unique
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  Event      Event[]
+}
+
+model Actor {
+  id         Int      @id @default(autoincrement())
+  name       String
+  email      String   @unique
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  Event      Event[]
+}
+
+model Action {
+  id         Int      @id @default(autoincrement())
+  name       String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  Event      Event[]
+}
+
+model Target {
+  id         Int      @id @default(autoincrement())
+  name       String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  Event      Event[]
+}
+
+model Event {
+  id          Int      @id @default(autoincrement())
+  location    String
+  actor       Actor    @relation(fields: [actor_id], references: [id])
+  actor_id    Int
+  group       Group    @relation(fields: [group_id], references: [id])
+  group_id    Int
+  action      Action   @relation(fields: [action_id], references: [id])
+  action_id   Int
+  target      Target   @relation(fields: [target_id], references: [id])
+  target_id   Int
+  meta_data   String
+  occurred_at DateTime
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 }
