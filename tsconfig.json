@@ -1,8 +1,12 @@
 {
   "extends": "@tsconfig/node16/tsconfig.json",
   "compilerOptions": {
-    "outDir": "dist"
+    "sourceMap": true,
+    "target": "es2017",
+    "module":"commonjs",
+    "outDir": "./dist",
+    "baseUrl": "./src"
   },
-  "include": ["src"],
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules"]
 }

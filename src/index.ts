@@ -1,22 +1,26 @@
 import express, { Application, Request, Response } from 'express';
+import dotenv from 'dotenv';
 import bodyParser from 'body-parser';
+import events from './routes/events';
 const app: Application = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 7070;
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.get('/', async (req: Request, res: Response): Promise<Response> => {
-  return res.status(200).send({
-    message: 'Hello World!',
-  });
+//controllers
+app.use('/events', events);
+
+//error sink
+
+app.use((error: any, req: express.Request, res: express.Response, next: Function) => {
+  res.send(error);
 });
 
-app.post('/post', async (req: Request, res: Response): Promise<Response> => {
-  console.log(req.body);
-  return res.status(200).send({
-    message: 'Hello World from post!',
-  });
+//not found sink
+
+app.use((req: express.Request, res: express.Response, next: Function) => {
+  res.status(404).send('404 Not Found!');
 });
 
 try {
