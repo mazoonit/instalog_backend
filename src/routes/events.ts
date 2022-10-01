@@ -1,4 +1,7 @@
 import express, { Request, Response } from 'express';
+import serializer from '../utilities/serializer';
+import { validatorMiddleware } from '../utilities/validator';
+import GenericError from '../utilities/GenericError';
 const router = express.Router();
 
 router.get('/', async (req: Request, res: Response, next: Function) => {
@@ -6,8 +9,37 @@ router.get('/', async (req: Request, res: Response, next: Function) => {
     message: 'Hello World!',
   });
 });
+/*
+{
+  "id": "evt_15B56WILKW5K",
+  "object": "event",
+  "actor_id": "user_3VG74289PUA2",
+  "actor_name": "Ali Salah",
+  "group": "instatus.com",
+  "action": {
+    "id": "evt_action_PGTD81NCAOQ2",
+    "object": "event_action",
+    "name": "user.login_succeeded"
+  },
+  "target_id": "user_DOKVD1U3L030",
+  "target_name": "ali@instatus.com",
+  "location": "105.40.62.95",
+  "occurred_at": "2022-01-05T14:31:13.607Z",
+  "metadata": {
+    "redirect": "/setup",
+    "description": "User login succeeded.",
+    "x_request_id": "req_W1Y13QOHMI5H"
+  },
+}
+*/
+router.post('/', async (req: Request, res: Response, next: Function) => {
+  //serializer
+  let event = serializer(
+    ['actor_name', 'target_name', 'location', 'occurred_at', 'metadata', 'action', 'group'],
+    req.body,
+  );
+  //get actor_id, target_id, group_id
 
-router.post('/post', async (req: Request, res: Response): Promise<Response> => {
   return res.status(200).send({
     message: 'Hello World from post!',
   });
