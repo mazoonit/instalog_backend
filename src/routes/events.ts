@@ -4,6 +4,7 @@ import { validatorMiddleware } from '../utilities/validator';
 import GenericError from '../utilities/GenericError';
 import { getObjectIdByAnotherField } from '../utilities/events_utilities/events';
 import { prisma } from '../utilities/prisma';
+import { create } from 'domain';
 const router = express.Router();
 
 router.get('/', async (req: Request, res: Response, next: Function) => {
@@ -37,43 +38,52 @@ router.get('/', async (req: Request, res: Response, next: Function) => {
 router.post('/', async (req: Request, res: Response, next: Function) => {
   //serializer
   try {
-    let event = serializer(
-      ['actor_email', 'actor_name', 'target_name', 'location', 'occurred_at', 'metadata', 'action', 'group'],
-      req.body,
-    );
+    let event = serializer(['location', 'occurred_at'], req.body);
+    let { actor_email, actor_name, target_name, group, action, metadata } = req.body;
 
     // get or create new object of actor/group/target
-
     //group
     let group_id = await getObjectIdByAnotherField({
       searchField: 'name',
-      value: event.group,
+      value: group,
       tableName: 'group',
-      data: { name: event.group },
+      data: { name: group },
     });
     //actor
     let actor_id = await getObjectIdByAnotherField({
       searchField: 'email',
-      value: event.actor_email,
+      value: actor_email,
       tableName: 'actor',
-      data: { name: event.actor_name, email: event.actor_email },
+      data: { name: actor_name, email: actor_email },
     });
     //target
     let target_id = await getObjectIdByAnotherField({
       searchField: 'name',
-      value: event.target_name,
+      value: target_name,
       tableName: 'target',
-      data: { name: event.target_name },
+      data: { name: target_name },
     });
-    console.log(group_id);
-    console.log(actor_id);
-    console.log(target_id);
-    //creating Event.
+    //Glowing ids to the event object.
+    event.group_id = group_id;
+    event.target_id = target_id;
+    event.actor_id = actor_id;
 
-    //get actor_id, target_id, group_id
+    //create action and glow its Id to the event object.
+    let createdAction = await prisma.action.create({
+      data: { name: action.name },
+    });
+    event.action_id = createdAction.id;
 
-    return res.status(200).send(event);
+    //parse metadata into string. and glowing it to the event object.
+    event.meta_data = JSON.stringify(metadata);
+
+    let createdEvent = await prisma.event.create({
+      data: { ...event },
+    });
+
+    return res.status(200).send(createdEvent);
   } catch (error) {
+    console.log(error);
     next(error);
   }
 });
