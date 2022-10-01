@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import serializer from '../utilities/serializer';
 import { validatorMiddleware } from '../utilities/validator';
 import GenericError from '../utilities/GenericError';
-import { getObjectIdByName } from '../utilities/events_utilities/events';
+import { getObjectIdByAnotherField } from '../utilities/events_utilities/events';
 import { prisma } from '../utilities/prisma';
 const router = express.Router();
 
@@ -36,12 +36,22 @@ router.get('/', async (req: Request, res: Response, next: Function) => {
 */
 router.post('/', async (req: Request, res: Response, next: Function) => {
   //serializer
-  let event = serializer(
-    ['actor_name', 'target_name', 'location', 'occurred_at', 'metadata', 'action', 'group'],
-    req.body,
-  );
-  //get actor_id, target_id, group_id
+  try {
+    let event = serializer(
+      ['actor_name', 'target_name', 'location', 'occurred_at', 'metadata', 'action', 'group'],
+      req.body,
+    );
+    await getObjectIdByAnotherField({
+      searchField: 'name',
+      value: 'ali@instatus.com',
+      tableName: 'actor',
+      data: { name: 'ali', email: 'ali@instatus.com' },
+    });
+    //get actor_id, target_id, group_id
 
-  return res.status(200).send(event);
+    return res.status(200).send(event);
+  } catch (error) {
+    next(error);
+  }
 });
 export default router;
