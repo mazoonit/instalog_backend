@@ -20,7 +20,7 @@ model Group {
 model Actor {
   id         String   @id
   name       String
-  email      String   @unique
+  email      String
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
   Event      Event[]

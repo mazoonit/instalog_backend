@@ -20,7 +20,6 @@ export const getObjectIdByAnotherField = async (props: {
     type ObjectKey = keyof typeof prismaModels;
     const tableNameCasted = tableName as ObjectKey;
     let prismaModel: any = prismaModels[tableNameCasted];
-    console.log(tableNameCasted);
 
     //casting to create custom where object to search of different fields
 
