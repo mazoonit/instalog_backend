@@ -38,15 +38,38 @@ router.post('/', async (req: Request, res: Response, next: Function) => {
   //serializer
   try {
     let event = serializer(
-      ['actor_name', 'target_name', 'location', 'occurred_at', 'metadata', 'action', 'group'],
+      ['actor_email', 'actor_name', 'target_name', 'location', 'occurred_at', 'metadata', 'action', 'group'],
       req.body,
     );
-    await getObjectIdByAnotherField({
+
+    // get or create new object of actor/group/target
+
+    //group
+    let group_id = await getObjectIdByAnotherField({
       searchField: 'name',
-      value: 'ali@instatus.com',
-      tableName: 'actor',
-      data: { name: 'ali', email: 'ali@instatus.com' },
+      value: event.group,
+      tableName: 'group',
+      data: { name: event.group },
     });
+    //actor
+    let actor_id = await getObjectIdByAnotherField({
+      searchField: 'email',
+      value: event.actor_email,
+      tableName: 'actor',
+      data: { name: event.actor_name, email: event.actor_email },
+    });
+    //target
+    let target_id = await getObjectIdByAnotherField({
+      searchField: 'name',
+      value: event.target_name,
+      tableName: 'target',
+      data: { name: event.target_name },
+    });
+    console.log(group_id);
+    console.log(actor_id);
+    console.log(target_id);
+    //creating Event.
+
     //get actor_id, target_id, group_id
 
     return res.status(200).send(event);

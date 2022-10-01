@@ -28,7 +28,7 @@ export const getObjectIdByAnotherField = async (props: {
 
     // checking for object if already exists
 
-    let obj = await prismaModel.findMany({
+    let obj = await prismaModel.findUnique({
       where: { ...whereObject },
     });
 
