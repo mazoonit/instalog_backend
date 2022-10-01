@@ -36,7 +36,7 @@ model Action {
 
 model Target {
   id         String   @id
-  name       String   @unique
+  name       String
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
   Event      Event[]
