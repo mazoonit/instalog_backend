@@ -1,5 +1,5 @@
 import GenericError from '../GenericError';
-import { prisma } from '../prisma';
+import prisma from '../prisma';
 const prismaModels = {
   actor: prisma.actor,
   target: prisma.target,
@@ -64,4 +64,3 @@ export const checkUniqueId = async (props: { id: string; tableName: string }) =>
   }
   return;
 };
-

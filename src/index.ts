@@ -5,12 +5,15 @@ import events from './routes/events';
 import { PrismaError } from './constants/prismaErrorCodes';
 const app: Application = express();
 const PORT = process.env.PORT || 7070;
+const cors = require('cors');
 
+app.use(cors({ origin: '*' }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 //controllers
 app.use('/events', events);
+//init db connection
 
 //error sink
 

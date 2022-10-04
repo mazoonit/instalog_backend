@@ -3,16 +3,16 @@ import serializer from '../utilities/serializer';
 import { validatorMiddleware } from '../utilities/validator';
 import GenericError from '../utilities/GenericError';
 import { checkUniqueId, getObjectIdByAnotherField } from '../utilities/events_utilities/events';
-import { prisma } from '../utilities/prisma';
+import prisma from '../utilities/prisma';
 import { create } from 'domain';
 import { v4 as uuidv4 } from 'uuid';
 
 const router = express.Router();
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 3;
 
-router.get(
-  '/',
+router.post(
+  '/fetch',
   [
     validatorMiddleware([
       { type: 'string', key: 'actor_email' },
@@ -46,6 +46,7 @@ router.get(
       if (!pageNumber) {
         pageNumber = 1;
       }
+      console.log(searchValue);
       const events = await prisma.event.findMany({
         where: {
           AND: [
@@ -199,7 +200,6 @@ router.post(
       });
       return res.status(200).send(createdEvent);
     } catch (error) {
-      console.log(error);
       next(error);
     }
   },
