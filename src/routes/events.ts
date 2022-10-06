@@ -6,7 +6,7 @@ import { checkUniqueId, getObjectIdByAnotherField } from '../utilities/events_ut
 import prisma from '../utilities/prisma';
 import { create } from 'domain';
 import { v4 as uuidv4 } from 'uuid';
-
+import { auth } from '../utilities/auth';
 const router = express.Router();
 
 const PAGE_SIZE = 3;
@@ -14,6 +14,7 @@ const PAGE_SIZE = 3;
 router.post(
   '/fetch',
   [
+    auth(),
     validatorMiddleware([
       { type: 'string', key: 'actor_email' },
       { type: 'string', key: 'actor_name' },
@@ -120,6 +121,7 @@ router.post(
 router.post(
   '/',
   [
+    auth(),
     validatorMiddleware([
       { type: 'string', key: 'id' },
       { type: 'string', key: 'actor_id' },
