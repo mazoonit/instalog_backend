@@ -9,10 +9,3 @@ export function auth() {
     }
   };
 }
-export function queryParser() {
-  return (req: any, res: any, next: any) => {
-    //just passing the query to the body to use validators and stuff
-    req.body = req.query;
-    next();
-  };
-}

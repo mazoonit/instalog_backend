@@ -1,122 +1,104 @@
 import express, { Request, Response } from 'express';
-import serializer from '../utilities/serializer';
+import { serialize, queryParser } from '../utilities/serializer';
 import { validatorMiddleware } from '../utilities/validator';
 import GenericError from '../utilities/GenericError';
 import { checkUniqueId, getObjectIdByAnotherField } from '../utilities/events_utilities/events';
 import prisma from '../utilities/prisma';
 import { create } from 'domain';
 import { v4 as uuidv4 } from 'uuid';
-import { auth,queryParser } from '../utilities/auth';
+import { auth } from '../utilities/auth';
 const router = express.Router();
 
 const PAGE_SIZE = 3;
 
-router.get(
-  '/',
-  [
-   // auth(),
-    queryParser(),
-    validatorMiddleware([
-      { type: 'string', key: 'actor_email' },
-      { type: 'string', key: 'actor_name' },
-      { type: 'string', key: 'target_name' },
-      { type: 'string', key: 'group_name' },
-      { type: 'string', key: 'action_name' },
-      { type: 'string', key: 'actor_id' },
-      { type: 'string', key: 'target_id' },
-      { type: 'string', key: 'group_id' },
-      { type: 'string', key: 'action_id' },
-      { type: 'string', key: 'searchValue' },
-      { type: 'int', key: 'pageNumber' },
-    ]),
-  ],
-  async (req: Request, res: Response, next: Function) => {
-    try {
-      let {
-        pageNumber,
-        searchValue,
-        group_id,
-        group_name,
-        actor_id,
-        actor_name,
-        actor_email,
-        target_id,
-        target_name,
-        action_id,
-        action_name,
-      } = req.body;
-      if (!pageNumber) {
-        pageNumber = 1;
-      }
-      const events = await prisma.event.findMany({
-        where: {
-          AND: [
-            {
-              OR: [
-                {
-                  actor: {
-                    name: { contains: searchValue },
-                  },
-                },
-                {
-                  actor: {
-                    email: { contains: searchValue },
-                  },
-                },
-                {
-                  target: {
-                    name: { contains: searchValue },
-                  },
-                },
-                {
-                  action: {
-                    name: { contains: searchValue },
-                  },
-                },
-                {
-                  group: {
-                    name: { contains: searchValue },
-                  },
-                },
-              ],
-            },
-            {
-              actor_id: actor_id,
-              target_id: target_id,
-              action_id: action_id,
-              group_id: group_id,
-              actor: {
-                name: { contains: actor_name },
-                email: { contains: actor_email },
-              },
-              target: {
-                name: { contains: target_name },
-              },
-              action: {
-                name: { contains: action_name },
-              },
-              group: {
-                name: { contains: group_name },
-              },
-            },
-          ],
-        },
-        include: {
-          actor: true,
-          action: true,
-          group: true,
-          target: true,
-        },
-        skip: PAGE_SIZE * ((!pageNumber || pageNumber < 1 ? 1 : pageNumber) - 1),
-        take: PAGE_SIZE,
-      });
-
-      return res.status(200).send(events);
-    } catch (error) {
-      next(error);
+router.get('/', [auth(), queryParser()], async (req: Request, res: Response, next: Function) => {
+  try {
+    let {
+      pageNumber,
+      searchValue,
+      group_id,
+      group_name,
+      actor_id,
+      actor_name,
+      actor_email,
+      target_id,
+      target_name,
+      action_id,
+      action_name,
+    } = req.body;
+    if (!pageNumber) {
+      pageNumber = 1;
     }
-  },
-);
+    //parsing pageNumber because query strings are mainly strings :"
+    pageNumber = parseInt(pageNumber);
+    const events = await prisma.event.findMany({
+      where: {
+        AND: [
+          {
+            OR: [
+              {
+                actor: {
+                  name: { contains: searchValue },
+                },
+              },
+              {
+                actor: {
+                  email: { contains: searchValue },
+                },
+              },
+              {
+                target: {
+                  name: { contains: searchValue },
+                },
+              },
+              {
+                action: {
+                  name: { contains: searchValue },
+                },
+              },
+              {
+                group: {
+                  name: { contains: searchValue },
+                },
+              },
+            ],
+          },
+          {
+            actor_id: actor_id,
+            target_id: target_id,
+            action_id: action_id,
+            group_id: group_id,
+            actor: {
+              name: { contains: actor_name },
+              email: { contains: actor_email },
+            },
+            target: {
+              name: { contains: target_name },
+            },
+            action: {
+              name: { contains: action_name },
+            },
+            group: {
+              name: { contains: group_name },
+            },
+          },
+        ],
+      },
+      include: {
+        actor: true,
+        action: true,
+        group: true,
+        target: true,
+      },
+      skip: PAGE_SIZE * ((!pageNumber || pageNumber < 1 ? 1 : pageNumber) - 1),
+      take: PAGE_SIZE,
+    });
+
+    return res.status(200).send(events);
+  } catch (error) {
+    next(error);
+  }
+});
 
 router.post(
   '/',
@@ -138,7 +120,7 @@ router.post(
   async (req: Request, res: Response, next: Function) => {
     //serializer
     try {
-      let event = serializer(['id', 'location', 'occurred_at'], req.body);
+      let event = serialize(['id', 'location', 'occurred_at'], req.body);
       let { actor_id, actor_email, actor_name, target_id, target_name, group, action, metadata } = req.body;
       //generate Ids if not exist
       if (!actor_id) {
